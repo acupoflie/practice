@@ -7,7 +7,9 @@ let movies = JSON.parse(fs.readFileSync('./data/movies.json'))
 
 app.use(express.json())
 
-app.get('/api/v1/movies', (req, res) => {
+// ROUTE HANDLER FUNCTIONS
+
+const getAllMovies = (req, res) => {
     res.status(200).json({
         status: "success",
         count: movies.length,
@@ -15,9 +17,9 @@ app.get('/api/v1/movies', (req, res) => {
             movies: movies
         }
     })
-})
+}
 
-app.get('/api/v1/movies/:id', (req, res) => {
+const getMovie = (req, res) => {
     const id = +req.params.id
 
     let movie = movies.find(el => el.id === id)
@@ -35,9 +37,9 @@ app.get('/api/v1/movies/:id', (req, res) => {
             movie: movie
         }
     })
-})
+}
 
-app.post('/api/v1/movies', (req, res) => {
+const createMovie = (req, res) => {
     // console.log(req.body)
     const newId = movies[movies.length - 1].id + 1
 
@@ -53,7 +55,69 @@ app.post('/api/v1/movies', (req, res) => {
     })
 
     // res.send('created')
-})
+}
+
+const updateMovie = (req, res) => {
+    const id = +req.params.id
+    const updateMovie = movies.find(el => el.id === id)
+    if(!updateMovie) {
+        return res.status(404).json({
+            status: "fail",
+            message: `No movie found with id: ${id}`
+        })
+    }
+    let index = movies.indexOf(updateMovie)
+
+    let updatedMovie = Object.assign(updateMovie, req.body)
+    movies[index] = updatedMovie
+
+    fs.writeFile('./data/movies.json', JSON.stringify(movies), (err) => {
+        res.status(200).json({
+            status: 'success',
+            data: {
+                updatedMovie
+            }
+        })
+    })
+}
+
+const deleteMovie = (req, res) => {
+    const id = +req.params.id
+    let movieToDelete = movies.find(el => el.id === id)
+    if(!movieToDelete) {
+        return res.status(404).json({
+            status: "fail",
+            message: `No movie found with id: ${id}`
+        })
+    }
+    const index = movies.indexOf(movieToDelete)
+
+    movies.splice(index, 1)
+
+    fs.writeFile('./data/movies.json', JSON.stringify(movies), (err) => {
+        res.status(204).json({
+            status: 'success',
+            data: {
+                movies: null
+            }
+        })
+    })
+}
+
+// app.get('/api/v1/movies', getAllMovies)
+// app.get('/api/v1/movies/:id', getMovie)
+// app.post('/api/v1/movies', createMovie)
+// app.patch('/api/v1/movies/:id', updateMovie);
+// app.delete('/api/v1/movies/:id', deleteMovie);
+
+app.route('/api/v1/movies')
+    .get(getAllMovies)
+    .post(createMovie)
+
+app.route('/api/v1/movies/:id')
+    .get(getMovie)
+    .patch(updateMovie)
+    .delete(deleteMovie)
 
 const PORT = 3000
 app.listen(PORT, () => {
