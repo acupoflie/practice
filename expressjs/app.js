@@ -12,6 +12,7 @@ app.use((req, res, next) => {
     req.requestedAt = new Date().toISOString()
     next()
 })
+app.use(express.static('./public'))
 
 // ROUTE HANDLER FUNCTIONS
 
