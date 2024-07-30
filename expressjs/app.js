@@ -7,7 +7,9 @@ const morgan = require('morgan')
 const moviesRouter = require('./routes/moviesRouter')
 
 app.use(express.json())
-app.use(morgan('dev'))
+if(process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'))
+}
 app.use((req, res, next) => {
     req.requestedAt = new Date().toISOString()
     next()
