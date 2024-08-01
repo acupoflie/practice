@@ -1,6 +1,7 @@
 
 const fs = require('fs')
 const Movie = require('./../models/movieModel')
+const { query } = require('express')
 
 let movies = JSON.parse(fs.readFileSync('./data/movies.json'))
 
@@ -33,7 +34,21 @@ exports.validateBody = (req, res, next) => {
 exports.getAllMovies = async (req, res) => {
     try {
         console.log(req.query)
-        const movies = await Movie.find(req.query)
+
+        //! EXCLUDING FIELDS AFTER MONGODB 7.0 ???
+        // const excludeField = ['sort', 'page', 'limit', 'fields']
+        // const queryObj = {...req.query}
+        // excludeField.forEach((field) => {
+        //     delete queryObj[field]
+        // })
+        // console.log(queryObj)
+
+        let queryStr = JSON.stringify(req.query)
+        queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`)
+        const queryObj = JSON.parse(queryStr)
+        console.log(queryObj)
+
+        const movies = await Movie.find(queryObj)
 
         // const movies = await Movie.find()
         //                     .where('duration')
