@@ -33,7 +33,7 @@ exports.validateBody = (req, res, next) => {
 
 exports.getAllMovies = async (req, res) => {
     try {
-        console.log(req.query)
+        // console.log(req.query)
 
         //! EXCLUDING FIELDS AFTER MONGODB 7.0 ???
         // const excludeField = ['sort', 'page', 'limit', 'fields']
@@ -46,9 +46,47 @@ exports.getAllMovies = async (req, res) => {
         let queryStr = JSON.stringify(req.query)
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`)
         const queryObj = JSON.parse(queryStr)
+
+        delete queryObj.sort
+        delete queryObj.fields
+        delete queryObj.page
+        delete queryObj.limit
         console.log(queryObj)
 
-        const movies = await Movie.find(queryObj)
+        let query = Movie.find(queryObj)
+
+
+        //! SORTING
+        if(req.query.sort) {
+            const sortby = req.query.sort.split(',').join(' ')
+            console.log(sortby)
+            query = query.sort(sortby)
+        } else {
+            query = query.sort('-createdAt')
+        }
+
+        //! LIMITING FIELDS
+        if(req.query.fields) {
+            const queryfields = req.query.fields.split(',').join(' ')
+            query.select(queryfields)
+        } else {
+            query.select('-__v')
+        }
+
+        //! PAGINATION
+        let page = +req.query.page || 1
+        let limit = +req.query.limit || 2
+        const skip = (page - 1) * limit
+        query = query.skip(skip).limit(limit)
+
+        if(req.query.page) {
+            const movieCount = await Movie.countDocuments()
+            if(skip >= movieCount) {
+                throw new Error('No more movies last')
+            }
+        }
+
+        const movies = await query;
 
         // const movies = await Movie.find()
         //                     .where('duration')
