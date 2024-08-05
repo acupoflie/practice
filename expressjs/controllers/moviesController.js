@@ -3,6 +3,7 @@ const fs = require('fs')
 const Movie = require('./../models/movieModel')
 const { query } = require('express')
 const ApiFeatures = require('../utils/ApiFeatures')
+const asyncErrorHandler = require('../utils/asyncErrorHandler')
 
 let movies = JSON.parse(fs.readFileSync('./data/movies.json'))
 
@@ -38,8 +39,7 @@ exports.getHighestRated = (req, res, next) => {
     next()
 }
 
-exports.getAllMovies = async (req, res) => {
-    try {
+exports.getAllMovies = asyncErrorHandler( async (req, res, next) => {
         console.log(req.query)
 
         const features = new ApiFeatures(Movie.find(), req.query)
@@ -72,16 +72,9 @@ exports.getAllMovies = async (req, res) => {
                 movies
             }
         })
-    } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})
 
-exports.getMovie = async (req, res) => {
-    try {
+exports.getMovie = asyncErrorHandler( async (req, res, next) => {
         const movie = await Movie.findById(req.params.id)
 
         res.status(200).json({
@@ -90,17 +83,9 @@ exports.getMovie = async (req, res) => {
                 movie
             }
         })
-    } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})
 
-exports.createMovie = async (req, res) => {
-
-    try {
+exports.createMovie = asyncErrorHandler( async (req, res, next) => {
         const movie = await Movie.create(req.body)
 
         res.status(201).json({
@@ -109,16 +94,9 @@ exports.createMovie = async (req, res) => {
                 movie
             }
         })
-    } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})
 
-exports.updateMovie = async (req, res) => {
-    try {
+exports.updateMovie = asyncErrorHandler( async (req, res, next) => {
         const movie = await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
 
         res.status(200).json({
@@ -127,32 +105,18 @@ exports.updateMovie = async (req, res) => {
                 movie
             }
         })
-    } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})
 
-exports.deleteMovie = async (req, res) => {
-    try {
+exports.deleteMovie = asyncErrorHandler( async (req, res, next) => {
         await Movie.findByIdAndDelete(req.params.id)
 
         res.status(204).json({
             status: 'success',
             data: null
         })
-    } catch (err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})
 
-exports.getMovieStats = async (req, res) => {
-    try {
+exports.getMovieStats = asyncErrorHandler( async (req, res, next) => {
         const stats = await Movie.aggregate([
             { $match: {ratings: {$gte: 5}} },
             { $group: {
@@ -175,17 +139,9 @@ exports.getMovieStats = async (req, res) => {
                 stats
             }
         })
-    } catch(err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})
 
-exports.getMovieByGenre = async (req, res) => {
-    try{
-
+exports.getMovieByGenre = asyncErrorHandler( async (req, res, next) => {
         const genre = req.params.genre;
         const movies = await Movie.aggregate([
             {$unwind: '$genres'},
@@ -208,10 +164,4 @@ exports.getMovieByGenre = async (req, res) => {
                 movies
             }
         })
-    } catch(err) {
-        res.status(400).json({
-            status: 'fail',
-            message: err.message
-        })
-    }
-}
+})

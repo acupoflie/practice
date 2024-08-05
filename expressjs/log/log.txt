@@ -10,3 +10,4 @@ Query took 1349 milliseconds to fetch the documents
 Query took 180 milliseconds to fetch the documents 
 Query took 187 milliseconds to fetch the documents 
 Query took 180 milliseconds to fetch the documents 
+A new movie added to db with name New movieee created by SIR

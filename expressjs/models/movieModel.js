@@ -9,8 +9,8 @@ const movieSchema = new mongoose.Schema({
         required: [true, 'Name is required field'],
         unique: true,
         maxlength: [100, "bla bla string is > 100"],
-        trim: true,
-        validate: [validator.isAlpha, "Bla bla only alphabet"]
+        trim: true
+        // validate: [validator.isAlpha, "Bla bla only alphabet"]
     },
     description: {
         type: String,
@@ -48,7 +48,7 @@ const movieSchema = new mongoose.Schema({
         type: [String],
         required: [true, 'Genre is required field'],
         enum: {
-            values: ["Action", "Adventure", "Sci-Fi", "Thriller", "Crime", "Drama", "Comedy", "Romance", "Biography", "Politic", "War"],
+            values: ["Action", "Adventure", "Sci-Fi", "Thriller", "Crime", "Dram", "Comedy", "Romance", "Biography", "Politic", "War"],
             message: 'Invalid genre type'
         }
     },
