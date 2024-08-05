@@ -2,3 +2,8 @@ A new movie added to db with name Old movie created by SIR
 A new movie added to db with name Old movie created by SIR
 A new movie added to db with name New movie created by SIR
 Query took 183 millisecond to fetch the documents 
+Query took 180 milliseconds to fetch the documents 
+Query took 183 milliseconds to fetch the documents 
+Query took 766 milliseconds to fetch the documents 
+Query took 1793 milliseconds to fetch the documents 
+Query took 1349 milliseconds to fetch the documents 
