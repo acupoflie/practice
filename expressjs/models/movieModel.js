@@ -71,6 +71,22 @@ movieSchema.pre('save', function(next) {
     next()
 })
 
+movieSchema.pre(/^find/, function(next) {
+    this.find({releaseDate: {$lte: Date.now()}})
+    this.startTime = Date.now()
+    next()
+})
+
+movieSchema.post(/^find/, function(docs, next) {
+    this.find({releaseDate: {$lte: Date.now()}})
+    this.endTime = Date.now()
+
+    let content = `Query took ${this.endTime - this.startTime} milliseconds to fetch the documents \n`
+    fs.writeFileSync('./log/log.txt', content, {flag: 'a'}, (err) => console.log(err))
+
+    next()
+})
+
 movieSchema.post('save', function(doc, next) {
     let content = `A new movie added to db with name ${doc.name} created by ${doc.createdBy}\n`
     fs.writeFileSync('./log/log.txt', content, {flag: 'a'}, (err) => console.log(err))
