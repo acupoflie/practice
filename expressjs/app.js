@@ -5,6 +5,8 @@ let app = express();
 const fs = require('fs')
 const morgan = require('morgan')
 const moviesRouter = require('./routes/moviesRouter')
+const CustomError = require('./utils/CustomError')
+const globalErrorHandler = require('./controllers/errorController')
 
 app.use(express.json())
 if(process.env.NODE_ENV === 'development') {
@@ -27,11 +29,21 @@ app.use(express.static('./public'))
 app.use('/api/v1/movies', moviesRouter)
 
 app.all('*', (req, res, next) => {
-    res.status(404).json({
-        status: 'fail',
-        message: `Can't find ${req.originalUrl} on the server`
-    })
+    // res.status(404).json({
+    //     status: 'fail',
+    //     message: `Can't find ${req.originalUrl} on the server`
+    // })
+    //! ----
+    // const err = new Error(`Can't find ${req.originalUrl} on the server`);
+    // err.status = 'fail',
+    // err.statusCode = 404
+
+    const err = new CustomError(`Can't find ${req.originalUrl} on the server`, 404)
+
+    next(err)
 })
+
+app.use(globalErrorHandler)
 
 module.exports = app
 
