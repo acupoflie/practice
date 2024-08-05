@@ -66,6 +66,7 @@ movieSchema.virtual('durationInHours').get(function() {
     return this.duration / 60
 })
 
+//! DOCUMENT MIDDLEWARE
 movieSchema.pre('save', function(next) {
     this.createdBy = 'SIR'
     next()
@@ -77,6 +78,7 @@ movieSchema.pre(/^find/, function(next) {
     next()
 })
 
+//! QUERY MIDDLEWARE
 movieSchema.post(/^find/, function(docs, next) {
     this.find({releaseDate: {$lte: Date.now()}})
     this.endTime = Date.now()
@@ -90,6 +92,11 @@ movieSchema.post(/^find/, function(docs, next) {
 movieSchema.post('save', function(doc, next) {
     let content = `A new movie added to db with name ${doc.name} created by ${doc.createdBy}\n`
     fs.writeFileSync('./log/log.txt', content, {flag: 'a'}, (err) => console.log(err))
+    next()
+})
+
+movieSchema.pre('aggregate', function(next) {
+    console.log(this.pipeline().unshift({$match: {releaseDate: {$lte: new Date()}}}))
     next()
 })
 

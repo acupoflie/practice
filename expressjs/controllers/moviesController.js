@@ -165,7 +165,7 @@ exports.getMovieStats = async (req, res) => {
                 movieCount: { $sum: 1 }
             } },
             { $sort: {_id: 1}},
-            { $match: {maxPrice: {$gte: 9}} }
+            // { $match: {maxPrice: {$gte: 9}} }
         ]);
 
         res.status(200).json({
