@@ -1,13 +1,16 @@
 
 const mongoose = require('mongoose')
 const fs = require('fs')
+const validator = require('validator')
 
 const movieSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name is required field'],
         unique: true,
-        trim: true
+        maxlength: [100, "bla bla string is > 100"],
+        trim: true,
+        validate: [validator.isAlpha, "Bla bla only alphabet"]
     },
     description: {
         type: String,
@@ -20,7 +23,12 @@ const movieSchema = new mongoose.Schema({
     },
     ratings: {
         type: Number,
-        default: 1.0
+        validate: {
+            validator: function (value) {
+                return value >= 1 && value <= 10
+            },
+            message: "Ratings ({VALUE}) should be 1 < value < 10"
+        }
     },
     totalRatings: {
         type: Number
@@ -38,7 +46,11 @@ const movieSchema = new mongoose.Schema({
     },
     genres: {
         type: [String],
-        required: [true, 'Genre is required field']
+        required: [true, 'Genre is required field'],
+        enum: {
+            values: ["Action", "Adventure", "Sci-Fi", "Thriller", "Crime", "Drama", "Comedy", "Romance", "Biography", "Politic", "War"],
+            message: 'Invalid genre type'
+        }
     },
     directors: {
         type: [String],
@@ -58,45 +70,45 @@ const movieSchema = new mongoose.Schema({
     },
     createdBy: String
 }, {
-    toJSON: {virtuals: true},
-    toObject: {virtuals: true}
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
-movieSchema.virtual('durationInHours').get(function() {
+movieSchema.virtual('durationInHours').get(function () {
     return this.duration / 60
 })
 
 //! DOCUMENT MIDDLEWARE
-movieSchema.pre('save', function(next) {
+movieSchema.pre('save', function (next) {
     this.createdBy = 'SIR'
     next()
 })
 
-movieSchema.pre(/^find/, function(next) {
-    this.find({releaseDate: {$lte: Date.now()}})
+movieSchema.pre(/^find/, function (next) {
+    this.find({ releaseDate: { $lte: Date.now() } })
     this.startTime = Date.now()
     next()
 })
 
 //! QUERY MIDDLEWARE
-movieSchema.post(/^find/, function(docs, next) {
-    this.find({releaseDate: {$lte: Date.now()}})
+movieSchema.post(/^find/, function (docs, next) {
+    this.find({ releaseDate: { $lte: Date.now() } })
     this.endTime = Date.now()
 
     let content = `Query took ${this.endTime - this.startTime} milliseconds to fetch the documents \n`
-    fs.writeFileSync('./log/log.txt', content, {flag: 'a'}, (err) => console.log(err))
+    fs.writeFileSync('./log/log.txt', content, { flag: 'a' }, (err) => console.log(err))
 
     next()
 })
 
-movieSchema.post('save', function(doc, next) {
+movieSchema.post('save', function (doc, next) {
     let content = `A new movie added to db with name ${doc.name} created by ${doc.createdBy}\n`
-    fs.writeFileSync('./log/log.txt', content, {flag: 'a'}, (err) => console.log(err))
+    fs.writeFileSync('./log/log.txt', content, { flag: 'a' }, (err) => console.log(err))
     next()
 })
 
-movieSchema.pre('aggregate', function(next) {
-    console.log(this.pipeline().unshift({$match: {releaseDate: {$lte: new Date()}}}))
+movieSchema.pre('aggregate', function (next) {
+    console.log(this.pipeline().unshift({ $match: { releaseDate: { $lte: new Date() } } }))
     next()
 })
 
