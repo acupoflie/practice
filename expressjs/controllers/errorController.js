@@ -1,9 +1,11 @@
-const devError = (res, error) => {
-    res.status(error.statusCode).json({
-        status: error.status,
-        message: error.message,
-        stackTrace: error.stack,
-        error: error
+const CustomError = require('../utils/CustomError')
+
+const devError = (res, err) => {
+    res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+        stackTrace: err.stack,
+        error: err
     })
 }
 
@@ -21,6 +23,11 @@ const prodError = (res, error) => {
     }
 }
 
+const castErrorHandler = (err) => {
+    const msg = `Invalid value ${err.path}: ${err.value}`;
+    return new CustomError(msg, 400)
+}
+
 module.exports = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
     error.status = error.status || 'error'
@@ -28,6 +35,9 @@ module.exports = (error, req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         devError(res, error)
     } else if (process.env.NODE_ENV === 'production') {
+        // let err = {...error, name: error.name}
+
+        if(error.name === 'CastError') error = castErrorHandler(error)
         prodError(res, error)
     }
 }
