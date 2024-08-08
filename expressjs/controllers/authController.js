@@ -50,7 +50,7 @@ exports.login = asyncErrorHandler( async (req, res, next) => {
 exports.protect = asyncErrorHandler( async (req, res, next) => {
     const testToken = req.headers.authorization
     let token;
-    if(testToken && testToken.startsWith('bearer')) {
+    if(testToken && testToken.startsWith('Bearer')) {
         token = testToken.split(' ')[1]
     }
     if(!token) next(new CustomError('You are not logged in!', 401))
@@ -67,3 +67,12 @@ exports.protect = asyncErrorHandler( async (req, res, next) => {
     req.user = user;
     next()
 })
+
+exports.restrict = (role) => {
+    return (req, res, next) => {
+        if(req.user.role !== role) {
+            return next(new CustomError('Dont have permission to perform this action', 403))
+        }
+        next()
+    }
+}
