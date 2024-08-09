@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const CustomError = require('../utils/CustomError')
 const util = require('util')
 const sendEmail = require('../utils/email')
+const crypto = require('crypto')
 
 const signToken = id => {
     return jwt.sign({id}, process.env.SECRET_STR, {
@@ -110,6 +111,23 @@ exports.forgotPassword = asyncErrorHandler( async (req, res, next) => {
     }
 })
 
-exports.resetPassword = (req, res, next) => {
+exports.resetPassword = asyncErrorHandler( async (req, res, next) => {
+    const token = crypto.createHash('sha-256').update(req.params.token).digest('hex')
+    const user = await User.findOne({passwordResetToken: token, passwordResetTokenExpire: {$gt: Date.now()}})
 
-}
+    if(!user) {
+        return next(new CustomError('Token is invalid or has expired', 400))
+    }
+    user.password = req.body.password
+    user.confirmPassword = req.body.confirmPassword
+    user.passwordResetToken = undefined
+    user.passwordResetTokenExpire = undefined
+    user.passwordChangedAt = Date.now()
+    user.save()
+
+    const jwttoken = signToken(user._id)
+    res.status(200).json({
+        status: 'success',
+        token: jwttoken
+    })
+})
