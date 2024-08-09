@@ -15,6 +15,14 @@ const signToken = id => {
 const createSendResponse = (user, statusCode, res) => {
     const token = signToken(user._id)
 
+    res.cookie('jwt', token, {
+        maxAge: 60 * 60 * 1000,
+        // secure: true,
+        httpOnly: true
+    })
+
+    user.password = undefined
+
     res.status(statusCode).json({
         status: "success",
         token,
