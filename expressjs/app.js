@@ -6,6 +6,7 @@ const fs = require('fs')
 const morgan = require('morgan')
 const moviesRouter = require('./routes/moviesRouter')
 const authRouter = require('./routes/authRouter')
+const userRouter = require('./routes/userRouter')
 const CustomError = require('./utils/CustomError')
 const globalErrorHandler = require('./controllers/errorController')
 
@@ -28,7 +29,8 @@ app.use(express.static('./public'))
 // app.delete('/api/v1/movies/:id', deleteMovie);
 
 app.use('/api/v1/movies', moviesRouter)
-app.use('/api/v1/users', authRouter)
+app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/users', userRouter)
 
 app.all('*', (req, res, next) => {
     // res.status(404).json({

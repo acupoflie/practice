@@ -37,6 +37,11 @@ const userSchema = new mongoose.Schema({
             message: 'Passwords are not same!'
         }
     },
+    active: {
+        type: Boolean,
+        default: true,
+        select: false
+    },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetTokenExpire: Date
@@ -47,6 +52,11 @@ userSchema.pre('save', async function(next) {
 
     this.password = await bcrypt.hash(this.password, 12)
     this.confirmPassword = undefined
+    next()
+})
+
+userSchema.pre(/^find/, function(next) {
+    this.find({active: {$ne: false}})
     next()
 })
 
