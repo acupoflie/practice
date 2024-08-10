@@ -1,7 +1,6 @@
 
 
 const express = require('express');
-let app = express();
 const fs = require('fs')
 const morgan = require('morgan')
 const moviesRouter = require('./routes/moviesRouter')
@@ -9,6 +8,17 @@ const authRouter = require('./routes/authRouter')
 const userRouter = require('./routes/userRouter')
 const CustomError = require('./utils/CustomError')
 const globalErrorHandler = require('./controllers/errorController')
+const rateLimit = require('express-rate-limit')
+
+let app = express();
+
+let limiter = rateLimit({
+    max: 1000,
+    windowMs: 60 * 60 * 1000,
+    message: "We received too many request from this IP. Try after a while."
+})
+
+app.use('/api', limiter)
 
 app.use(express.json())
 if(process.env.NODE_ENV === 'development') {
