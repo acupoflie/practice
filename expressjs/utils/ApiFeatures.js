@@ -22,6 +22,7 @@ class ApiFeatures {
 
     sort() {
         if(this.queryStr.sort) {
+            console.log(this.queryStr.sort)
             const sortby = this.queryStr.sort.split(',').join(' ')
             console.log(sortby)
             this.query = this.query.sort(sortby)

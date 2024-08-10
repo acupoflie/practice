@@ -9,8 +9,14 @@ const userRouter = require('./routes/userRouter')
 const CustomError = require('./utils/CustomError')
 const globalErrorHandler = require('./controllers/errorController')
 const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
+const sanitizer = require('express-mongo-sanitize')
+const xss = require('xss-clean')
+const hpp = require('hpp')
 
 let app = express();
+
+app.use(helmet())
 
 let limiter = rateLimit({
     max: 1000,
@@ -20,7 +26,21 @@ let limiter = rateLimit({
 
 app.use('/api', limiter)
 
-app.use(express.json())
+app.use(express.json({limit: '10kb'}))
+
+app.use(sanitizer())
+app.use(xss())
+app.use(hpp({whitelist: [
+    'duration', 
+    'ratings', 
+    'releaseYear', 
+    'releaseDate', 
+    'genres', 
+    'directors',
+    'actors',
+    'price'
+]}))
+
 if(process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
 }
