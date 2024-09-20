@@ -43,6 +43,7 @@ let redisClient;
     await redisClient.connect();
 })();
 
+app.set('trust proxy')
 app.use(session({
     store: new redisStore({ client: redisClient }),
     secret: SESSION_SECRET,
@@ -57,6 +58,7 @@ app.use(session({
 
 app.get('/', (req, res) => {
     res.send('<h2>hi there...!!!</h2>')
+    console.log('hello mother')
 })
 
 app.use("/posts", postRouter)
