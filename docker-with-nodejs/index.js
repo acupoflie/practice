@@ -6,6 +6,7 @@ const postRouter = require('./routes/postRouter')
 const userRouter = require('./routes/userRouter')
 const session = require('express-session')
 const redis = require('redis')
+const cors = require('cors')
 
 app.use(express.json())
 
@@ -44,6 +45,7 @@ let redisClient;
 })();
 
 app.set('trust proxy')
+app.use(cors())
 app.use(session({
     store: new redisStore({ client: redisClient }),
     secret: SESSION_SECRET,
